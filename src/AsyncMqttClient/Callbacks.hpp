@@ -14,6 +14,13 @@ typedef std::function<void(uint16_t packetId)> OnUnsubscribeUserCallback;
 typedef std::function<void(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total)> OnMessageUserCallback;
 typedef std::function<void(uint16_t packetId)> OnPublishUserCallback;
 
+typedef std::function<void(bool sessionPresent, void* arg)> OnConnectUserCallbackWithArg;
+typedef std::function<void(AsyncMqttClientDisconnectReason reason, void* arg)> OnDisconnectUserCallbackWithArg;
+typedef std::function<void(uint16_t packetId, uint8_t qos, void* arg)> OnSubscribeUserCallbackWithArg;
+typedef std::function<void(uint16_t packetId, void* arg)> OnUnsubscribeUserCallbackWithArg;
+typedef std::function<void(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total, void* arg)> OnMessageUserCallbackWithArg;
+typedef std::function<void(uint16_t packetId, void* arg)> OnPublishUserCallbackWithArg;
+    
 // internal callbacks
 typedef std::function<void(bool sessionPresent, uint8_t connectReturnCode)> OnConnAckInternalCallback;
 typedef std::function<void()> OnPingRespInternalCallback;

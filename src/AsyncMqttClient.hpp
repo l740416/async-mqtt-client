@@ -62,6 +62,13 @@ class AsyncMqttClient {
   AsyncMqttClient& onMessage(AsyncMqttClientInternals::OnMessageUserCallback callback);
   AsyncMqttClient& onPublish(AsyncMqttClientInternals::OnPublishUserCallback callback);
 
+  AsyncMqttClient& onConnectWithArg(AsyncMqttClientInternals::OnConnectUserCallbackWithArg callback, void* pArg);
+  AsyncMqttClient& onDisconnectWithArg(AsyncMqttClientInternals::OnDisconnectUserCallbackWithArg callback, void* pArg);
+  AsyncMqttClient& onSubscribeWithArg(AsyncMqttClientInternals::OnSubscribeUserCallbackWithArg callback, void* pArg);
+  AsyncMqttClient& onUnsubscribeWithArg(AsyncMqttClientInternals::OnUnsubscribeUserCallbackWithArg callback, void* pArg);
+  AsyncMqttClient& onMessageWithArg(AsyncMqttClientInternals::OnMessageUserCallbackWithArg callback, void* pArg);
+  AsyncMqttClient& onPublishWithArg(AsyncMqttClientInternals::OnPublishUserCallbackWithArg callback, void* pArg);
+
   bool connected() const;
   void connect();
   void disconnect(bool force = false);
@@ -110,6 +117,13 @@ class AsyncMqttClient {
   std::vector<AsyncMqttClientInternals::OnMessageUserCallback> _onMessageUserCallbacks;
   std::vector<AsyncMqttClientInternals::OnPublishUserCallback> _onPublishUserCallbacks;
 
+  std::vector<std::pair<AsyncMqttClientInternals::OnConnectUserCallbackWithArg, void*>> _onConnectUserCallbacksWithArg;
+  std::vector<std::pair<AsyncMqttClientInternals::OnDisconnectUserCallbackWithArg, void*>> _onDisconnectUserCallbacksWithArg;
+  std::vector<std::pair<AsyncMqttClientInternals::OnSubscribeUserCallbackWithArg, void*>> _onSubscribeUserCallbacksWithArg;
+  std::vector<std::pair<AsyncMqttClientInternals::OnUnsubscribeUserCallbackWithArg, void*>> _onUnsubscribeUserCallbacksWithArg;
+  std::vector<std::pair<AsyncMqttClientInternals::OnMessageUserCallbackWithArg, void*>> _onMessageUserCallbacksWithArg;
+  std::vector<std::pair<AsyncMqttClientInternals::OnPublishUserCallbackWithArg, void*>> _onPublishUserCallbacksWithArg;
+    
   AsyncMqttClientInternals::ParsingInformation _parsingInformation;
   AsyncMqttClientInternals::Packet* _currentParsedPacket;
   uint8_t _remainingLengthBufferPosition;

@@ -146,6 +146,36 @@ AsyncMqttClient& AsyncMqttClient::onPublish(AsyncMqttClientInternals::OnPublishU
   return *this;
 }
 
+AsyncMqttClient& AsyncMqttClient::onConnectWithArg(AsyncMqttClientInternals::OnConnectUserCallbackWithArg callback, void* pArg) {
+  _onConnectUserCallbacksWithArg.push_back(std::make_pair(callback, pArg));
+  return *this;
+}
+
+AsyncMqttClient& AsyncMqttClient::onDisconnectWithArg(AsyncMqttClientInternals::OnDisconnectUserCallbackWithArg callback, void* pArg) {
+  _onDisconnectUserCallbacksWithArg.push_back(std::make_pair(callback, pArg));
+  return *this;
+}
+
+AsyncMqttClient& AsyncMqttClient::onSubscribeWithArg(AsyncMqttClientInternals::OnSubscribeUserCallbackWithArg callback, void* pArg) {
+  _onSubscribeUserCallbacksWithArg.push_back(std::make_pair(callback, pArg));
+  return *this;
+}
+
+AsyncMqttClient& AsyncMqttClient::onUnsubscribeWithArg(AsyncMqttClientInternals::OnUnsubscribeUserCallbackWithArg callback, void* pArg) {
+  _onUnsubscribeUserCallbacksWithArg.push_back(std::make_pair(callback, pArg));
+  return *this;
+}
+
+AsyncMqttClient& AsyncMqttClient::onMessageWithArg(AsyncMqttClientInternals::OnMessageUserCallbackWithArg callback, void* pArg) {
+  _onMessageUserCallbacksWithArg.push_back(std::make_pair(callback, pArg));
+  return *this;
+}
+
+AsyncMqttClient& AsyncMqttClient::onPublishWithArg(AsyncMqttClientInternals::OnPublishUserCallbackWithArg callback, void* pArg) {
+  _onPublishUserCallbacksWithArg.push_back(std::make_pair(callback, pArg));
+  return *this;
+}
+
 void AsyncMqttClient::_freeCurrentParsedPacket() {
   delete _currentParsedPacket;
   _currentParsedPacket = nullptr;
@@ -346,6 +376,7 @@ void AsyncMqttClient::_onDisconnect(AsyncClient* client) {
   _clear();
 
   for (auto callback : _onDisconnectUserCallbacks) callback(reason);
+  for (auto callback : _onDisconnectUserCallbacksWithArg) callback.first(reason, callback.second);
 
   _connectPacketNotEnoughSpace = false;
   _tlsBadFingerprint = false;
@@ -480,9 +511,11 @@ void AsyncMqttClient::_onConnAck(bool sessionPresent, uint8_t connectReturnCode)
   if (connectReturnCode == 0) {
     _connected = true;
     for (auto callback : _onConnectUserCallbacks) callback(sessionPresent);
+    for (auto callback : _onConnectUserCallbacksWithArg) callback.first(sessionPresent, callback.second);
   } else {
     _clear();
     for (auto callback : _onDisconnectUserCallbacks) callback(static_cast<AsyncMqttClientDisconnectReason>(connectReturnCode));
+    for (auto callback : _onDisconnectUserCallbacksWithArg) callback.first(static_cast<AsyncMqttClientDisconnectReason>(connectReturnCode), callback.second);
   }
 }
 
@@ -490,12 +523,14 @@ void AsyncMqttClient::_onSubAck(uint16_t packetId, char status) {
   _freeCurrentParsedPacket();
 
   for (auto callback : _onSubscribeUserCallbacks) callback(packetId, status);
+  for (auto callback : _onSubscribeUserCallbacksWithArg) callback.first(packetId, status, callback.second);    
 }
 
 void AsyncMqttClient::_onUnsubAck(uint16_t packetId) {
   _freeCurrentParsedPacket();
 
   for (auto callback : _onUnsubscribeUserCallbacks) callback(packetId);
+  for (auto callback : _onUnsubscribeUserCallbacksWithArg) callback.first(packetId, callback.second);
 }
 
 void AsyncMqttClient::_onMessage(char* topic, char* payload, uint8_t qos, bool dup, bool retain, size_t len, size_t index, size_t total, uint16_t packetId) {
@@ -517,6 +552,7 @@ void AsyncMqttClient::_onMessage(char* topic, char* payload, uint8_t qos, bool d
     properties.retain = retain;
 
     for (auto callback : _onMessageUserCallbacks) callback(topic, payload, properties, len, index, total);
+    for (auto callback : _onMessageUserCallbacksWithArg) callback.first(topic, payload, properties, len, index, total, callback.second);
   }
 }
 
@@ -577,6 +613,7 @@ void AsyncMqttClient::_onPubAck(uint16_t packetId) {
   _freeCurrentParsedPacket();
 
   for (auto callback : _onPublishUserCallbacks) callback(packetId);
+  for (auto callback : _onPublishUserCallbacksWithArg) callback.first(packetId, callback.second);
 }
 
 void AsyncMqttClient::_onPubRec(uint16_t packetId) {
@@ -595,6 +632,7 @@ void AsyncMqttClient::_onPubComp(uint16_t packetId) {
   _freeCurrentParsedPacket();
 
   for (auto callback : _onPublishUserCallbacks) callback(packetId);
+  for (auto callback : _onPublishUserCallbacksWithArg) callback.first(packetId, callback.second);
 }
 
 bool AsyncMqttClient::_sendPing() {
